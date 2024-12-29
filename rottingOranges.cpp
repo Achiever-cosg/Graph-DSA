@@ -1,21 +1,30 @@
-// https://leetcode.com/problems/rotting-oranges/description/
+// https://leetcode.com/problems/rotting-oranges/
 
 class Solution {
+private:
+    bool isValid(int index, int n)
+    {
+        if(index >= 0 && index < n)
+            return true;
+        
+        return false;
+    }
+
 public:
     int orangesRotting(vector<vector<int>>& grid) {
         int m = grid.size();
         int n = grid[0].size();
-        int cntFresh = 0;
 
-        queue<pair<int, int>> q;
-        vector<vector<int>> vis(m, vector<int>(n, 0));
+        vector<vector<int>> vis (m, vector<int>(n,0));
+        queue<pair<pair<int, int>, int>> q;
+        int cntFresh = 0;
         for(int i=0; i<m; i++)
         {
             for(int j=0; j<n; j++)
             {
                 if(grid[i][j] == 2)
                 {
-                    q.push({i, j});
+                    q.push({{i, j}, 0});
                     vis[i][j] = 1;
                 }
 
@@ -24,45 +33,39 @@ public:
             }
         }
 
-        int flag = 0, time = 0;
-        int delrow[] = {-1, 0, 1, 0};
-        int delcol[] = {0, 1, 0, -1};
+        int delrow[] = {-1, 0, +1, 0};
+        int delcol[] = {0, +1, 0, -1};
+        int maxTime = 0;
         while(!q.empty())
         {
             int sz = q.size();
-            if(flag == 0)
-                flag++;
-            else
-                time++;
-                
-            for(int a=0; a<sz; a++)
+            for(int i=0; i<sz; i++)
             {
                 auto it = q.front();
                 q.pop();
 
-                int row = it.first;
-                int col = it.second;
+                int row = it.first.first;
+                int col = it.first.second;
+                int time = it.second;
+                maxTime = max(time, maxTime);
 
                 for(int i=0; i<4; i++)
                 {
                     int nrow = row + delrow[i];
                     int ncol = col + delcol[i];
 
-                    if(nrow >= 0 && nrow < m && ncol >= 0 && ncol < n 
-                        && vis[nrow][ncol] == 0 && grid[nrow][ncol] == 1)
+                    if(isValid(nrow, m) && isValid(ncol, n) && !vis[nrow][ncol] 
+                        && grid[nrow][ncol] == 1)
                     {
+                        q.push({{nrow, ncol}, time+1});
                         vis[nrow][ncol] = 1;
-                        q.push({nrow, ncol});
                         cntFresh--;
                     }
                 }
             }
+            
         }
 
-        if(cntFresh == 0)
-            return time;
-
-        return -1;
+        return (cntFresh == 0) ? maxTime : -1;
     }
 };
-
